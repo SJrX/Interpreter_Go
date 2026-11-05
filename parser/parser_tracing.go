@@ -1,3 +1,14 @@
+// Parser tracing helpers, for debugging the Pratt parser.
+//
+// They are not called anywhere by default. To see how an expression is
+// parsed, add a call such as
+//
+//	defer untrace(trace("parseExpression"))
+//
+// at the top of a parse function and run the parser tests with -v.
+
+//lint:file-ignore U1000 Debugging helpers, only used while investigating the parser.
+
 package parser
 
 import (

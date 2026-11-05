@@ -2,6 +2,7 @@ package evaluator
 
 import (
 	"fmt"
+
 	"github.com/SJrX/Interpreter_Go/ast"
 	"github.com/SJrX/Interpreter_Go/object"
 )
@@ -117,7 +118,7 @@ func evalProgram(program *ast.Program, env *object.Environment) object.Object {
 	return result
 }
 
-func evalBlockStatement( block *ast.BlockStatement, env *object.Environment, ) object.Object {
+func evalBlockStatement(block *ast.BlockStatement, env *object.Environment) object.Object {
 	var result object.Object
 
 	for _, statement := range block.Statements {
@@ -152,7 +153,7 @@ func evalPrefixExpression(operator string, right object.Object) object.Object {
 	}
 }
 
-func evalInfixExpression( operator string, left, right object.Object, ) object.Object {
+func evalInfixExpression(operator string, left, right object.Object) object.Object {
 	switch {
 	case left.Type() == object.INTEGER_OBJ && right.Type() == object.INTEGER_OBJ:
 		return evalIntegerInfixExpression(operator, left, right)
@@ -193,7 +194,7 @@ func evalMinusPrefixOperatorExpression(right object.Object) object.Object {
 	return &object.Integer{Value: -value}
 }
 
-func evalIntegerInfixExpression( operator string, left, right object.Object, ) object.Object {
+func evalIntegerInfixExpression(operator string, left, right object.Object) object.Object {
 	leftVal := left.(*object.Integer).Value
 	rightVal := right.(*object.Integer).Value
 
@@ -220,7 +221,7 @@ func evalIntegerInfixExpression( operator string, left, right object.Object, ) o
 	}
 }
 
-func evalIfExpression( ie *ast.IfExpression, env *object.Environment, ) object.Object {
+func evalIfExpression(ie *ast.IfExpression, env *object.Environment) object.Object {
 	condition := Eval(ie.Condition, env)
 	if isError(condition) {
 		return condition
@@ -235,7 +236,7 @@ func evalIfExpression( ie *ast.IfExpression, env *object.Environment, ) object.O
 	}
 }
 
-func evalIdentifier( node *ast.Identifier, env *object.Environment, ) object.Object {
+func evalIdentifier(node *ast.Identifier, env *object.Environment) object.Object {
 	if val, ok := env.Get(node.Value); ok {
 		return val
 	}
@@ -269,7 +270,7 @@ func isError(obj object.Object) bool {
 	return false
 }
 
-func evalExpressions( exps []ast.Expression, env *object.Environment, ) []object.Object {
+func evalExpressions(exps []ast.Expression, env *object.Environment) []object.Object {
 	var result []object.Object
 
 	for _, e := range exps {
@@ -296,7 +297,7 @@ func applyFunction(fn object.Object, args []object.Object) object.Object {
 	}
 }
 
-func extendFunctionEnv( fn *object.Function, args []object.Object, ) *object.Environment {
+func extendFunctionEnv(fn *object.Function, args []object.Object) *object.Environment {
 	env := object.NewEnclosedEnvironment(fn.Env)
 
 	for paramIdx, param := range fn.Parameters {
@@ -314,7 +315,7 @@ func unwrapReturnValue(obj object.Object) object.Object {
 	return obj
 }
 
-func evalStringInfixExpression( operator string, left, right object.Object, ) object.Object {
+func evalStringInfixExpression(operator string, left, right object.Object) object.Object {
 	if operator != "+" {
 		return newError("unknown operator: %s %s %s", left.Type(), operator, right.Type())
 	}
@@ -344,7 +345,7 @@ func evalArrayIndexExpression(array, index object.Object) object.Object {
 	return arrayObject.Elements[idx]
 }
 
-func evalHashLiteral( node *ast.HashLiteral, env *object.Environment, ) object.Object {
+func evalHashLiteral(node *ast.HashLiteral, env *object.Environment) object.Object {
 	pairs := make(map[object.HashKey]object.HashPair)
 	for keyNode, valueNode := range node.Pairs {
 		key := Eval(keyNode, env)

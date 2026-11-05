@@ -1,10 +1,11 @@
 package evaluator
 
 import (
+	"testing"
+
 	"github.com/SJrX/Interpreter_Go/lexer"
 	"github.com/SJrX/Interpreter_Go/object"
 	"github.com/SJrX/Interpreter_Go/parser"
-	"testing"
 )
 
 func TestEvalIntegerExpression(t *testing.T) {
@@ -130,7 +131,7 @@ func TestReturnStatements(t *testing.T) {
 			
 			  return 1;
 			}
-			`,10,
+			`, 10,
 		},
 		{
 			`
@@ -138,7 +139,7 @@ func TestReturnStatements(t *testing.T) {
 			  return x;
 			  x + 10;
 			};
-			f(10);`,10,
+			f(10);`, 10,
 		},
 		{
 			`
@@ -147,7 +148,7 @@ func TestReturnStatements(t *testing.T) {
 			   return result;
 			   return 10;
 			};
-			f(10);`,20,
+			f(10);`, 20,
 		},
 	}
 
@@ -335,7 +336,7 @@ func TestStringConcatenation(t *testing.T) {
 
 func TestBuiltinFunctions(t *testing.T) {
 	tests := []struct {
-		input string
+		input    string
 		expected interface{}
 	}{
 		{`len("")`, 0},
@@ -379,7 +380,7 @@ func TestArrayLiterals(t *testing.T) {
 
 func TestArrayIndexExpressions(t *testing.T) {
 	tests := []struct {
-		input string
+		input    string
 		expected interface{}
 	}{
 		{
@@ -440,12 +441,12 @@ func TestHashLiterals(t *testing.T) {
 		t.Fatalf("Eval didn't return Hash. got=%T (%+v)", evaluated, evaluated)
 	}
 	expected := map[object.HashKey]int64{
-		(&object.String{Value: "one"}).HashKey(): 1,
-		(&object.String{Value: "two"}).HashKey(): 2,
+		(&object.String{Value: "one"}).HashKey():   1,
+		(&object.String{Value: "two"}).HashKey():   2,
 		(&object.String{Value: "three"}).HashKey(): 3,
-		(&object.Integer{Value: 4}).HashKey(): 4,
-		TRUE.HashKey(): 5,
-		FALSE.HashKey(): 6,
+		(&object.Integer{Value: 4}).HashKey():      4,
+		TRUE.HashKey():                             5,
+		FALSE.HashKey():                            6,
 	}
 	if len(result.Pairs) != len(expected) {
 		t.Fatalf("Hash has wrong num of pairs. got=%d", len(result.Pairs))
@@ -461,7 +462,7 @@ func TestHashLiterals(t *testing.T) {
 
 func TestHashIndexExpressions(t *testing.T) {
 	tests := []struct {
-		input string
+		input    string
 		expected interface{}
 	}{
 		{

@@ -2,8 +2,9 @@ package ast
 
 import (
 	"bytes"
-	"github.com/SJrX/Interpreter_Go/token"
 	"strings"
+
+	"github.com/SJrX/Interpreter_Go/token"
 )
 
 // The base Node interface
@@ -99,13 +100,13 @@ type StringLiteral struct {
 }
 
 type ArrayLiteral struct {
-	Token token.Token // the '[' token
+	Token    token.Token // the '[' token
 	Elements []Expression
 }
 
 type IndexExpression struct {
 	Token token.Token // The [ token
-	Left Expression
+	Left  Expression
 	Index Expression
 }
 
@@ -290,7 +291,7 @@ func (sl *StringLiteral) TokenLiteral() string {
 	return sl.Token.Literal
 }
 func (sl *StringLiteral) String() string {
- 	return sl.Token.Literal
+	return sl.Token.Literal
 }
 
 func (al *ArrayLiteral) expressionNode() {}

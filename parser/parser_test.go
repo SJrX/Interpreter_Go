@@ -2,9 +2,10 @@ package parser
 
 import (
 	"fmt"
+	"testing"
+
 	"github.com/SJrX/Interpreter_Go/ast"
 	"github.com/SJrX/Interpreter_Go/lexer"
-	"testing"
 )
 
 func TestLetStatements(t *testing.T) {
@@ -701,6 +702,9 @@ func TestParsingArrayLiterals(t *testing.T) {
 	program := p.ParseProgram()
 	checkParserErrors(t, p)
 	stmt, ok := program.Statements[0].(*ast.ExpressionStatement)
+	if !ok {
+		t.Fatalf("program.Statements[0] is not ast.ExpressionStatement. got=%T", program.Statements[0])
+	}
 	array, ok := stmt.Expression.(*ast.ArrayLiteral)
 	if !ok {
 		t.Fatalf("exp not ast.ArrayLiteral. got=%T", stmt.Expression)
@@ -720,6 +724,9 @@ func TestParsingIndexExpressions(t *testing.T) {
 	program := p.ParseProgram()
 	checkParserErrors(t, p)
 	stmt, ok := program.Statements[0].(*ast.ExpressionStatement)
+	if !ok {
+		t.Fatalf("program.Statements[0] is not ast.ExpressionStatement. got=%T", program.Statements[0])
+	}
 	indexExp, ok := stmt.Expression.(*ast.IndexExpression)
 	if !ok {
 		t.Fatalf("exp not *ast.IndexExpression. got=%T", stmt.Expression)
@@ -747,9 +754,9 @@ func TestParsingHashLiteralsStringKeys(t *testing.T) {
 		t.Errorf("hash.Pairs has wrong length. got=%d", len(hash.Pairs))
 	}
 	expected := map[string]int64{
-		"one":1,
-		"two":2,
-		"three":3,
+		"one":   1,
+		"two":   2,
+		"three": 3,
 	}
 	for key, value := range hash.Pairs {
 		literal, ok := key.(*ast.StringLiteral)
