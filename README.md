@@ -1,141 +1,134 @@
-# Interpreter written in Go for the Monkey language
+# Monkey interpreter in Go
 
-**Tree-walking interpreter written in Go.**
+A tree-walking interpreter for **Monkey**, the small programming language
+designed in Thorsten Ball's book
+[*Writing An Interpreter In Go*](https://interpreterbook.com/).
 
-**Monkey language has the following:**
-* C-like syntax 
-* Variable bindings 
-* Integers and booleans 
-* Arithmetic expressions 
-* Built-in functions 
-* First-class and higher-order functions 
-* Closures 
-* A string data structure 
-* An array data structure 
-* A hash data structure
+The source code is lexed into tokens, parsed into an abstract syntax tree (AST)
+with a Pratt parser, and evaluated by walking that tree directly. There is no
+bytecode or virtual machine.
 
-## Let’s see what Monkey looks like:
+## Attribution
 
-Here is how we bind values to names in Monkey:
+This repository is a fork of
+[SaladinoBelisario/Interpreter_Go](https://github.com/SaladinoBelisario/Interpreter_Go)
+by Saladino Belisario, who wrote the interpreter while working through the book.
+That code is MIT-licensed. See [LICENSE](LICENSE).
 
-```c:
-let age = 1;
-let name = "Monkey"; 
-let result = 10 * (20 / 2);
+The Monkey language, and the design of this interpreter, come from
+[*Writing An Interpreter In Go*](https://interpreterbook.com/) by
+Thorsten Ball. If you find this project useful, the book explains every part of
+it step by step and is well worth reading. This project is not affiliated with
+the book or its author.
+
+Changes made in this fork are listed in the Git history.
+
+## The language
+
+Monkey has integers, booleans, strings, arrays, hashes, first-class functions
+and closures, with a C-like syntax.
+
 ```
-Besides integers, booleans and strings, the Monkey interpreter we’re 
-going to build will also support arrays and hashes. Here’s what binding 
-an array of integers to a name looks like: 
+let total = (2 + 3) * 4;                      // 20
+let greeting = "Hello, " + "Monkey";          // "Hello, Monkey"
 
-```c:
-let myArray = [1, 2, 3, 4, 5];
-```
-And here is a hash, where values are associated with keys: 
+let colours = ["red", "green", "blue"];
+colours[1];                                   // "green"
 
-```c:
-let thorsten = {"name": "Thorsten", "age": 28};
-```
-
-Accessing the elements in arrays and hashes is done with index expressions:
-
-```c: 
-myArray[0] _// => 1_
-thorsten["name"] _// => "Thorsten"_
+let book = {"title": "Monkey", "pages": 42};
+book["pages"];                                // 42
 ```
 
-The let statements can also be used to bind functions to names. Here’s a 
-small function that adds two numbers: 
+Functions are values. The last expression in a function body is its result,
+and `return` is also available:
 
-```c: 
-let add = fn(a, b) { return a + b; };
 ```
+let square = fn(n) { n * n };
+square(7);                                    // 49
 
-But Monkey not only supports return statements. Implicit return values are 
-also possible, which means we can leave out the return if we want to:
-
-```c: 
-let add = fn(a, b) { a + b; };
-```
-
-And calling a function is as easy as you’d expect: 
-
-```c: 
-add(1, 2);
-```
-
-A more complex function, such as a fibonacci function that returns the 
-Nth Fibonacci number, might look like this: 
-
-```c: 
-let fibonacci = fn(x) { 
-    if (x == 0) { 
-        0
-    } else { 
-        if (x == 1) { 
-            1
-        } else { 
-            fibonacci(x - 1) + fibonacci(x - 2);
-        } 
-    } 
-}; 
-```
-
->Note the recursive calls to fibonacci itself!
-
-Monkey also supports a special type of functions, called higher order 
-functions. These are functions that take other functions as arguments. 
-Here is an example:
-
-```c:
-let twice = fn(f, x) { 
-    return f(f(x));
+let factorial = fn(n) {
+  if (n < 2) { 1 } else { n * factorial(n - 1) }
 };
-
-let addTwo = fn(x) { 
-    return x + 2;
-}; 
-
-twice(addTwo, 2); // => 6
+factorial(5);                                 // 120
 ```
 
-The interpreter will implement all these features. It will tokenize 
-and parse Monkey source code in a REPL, building up an internal 
-representation of the code called abstract syntax tree and then
-evaluate this tree. It will have a few major parts:
+Functions can take and return other functions, and closures capture their
+environment:
 
-* The lexer 
-* The parser 
-* The Abstract Syntax Tree (AST) 
-* The internal object system 
-* The evaluator
-
-## Why Go?
-
-* Go is really easy to read and subsequently understand.
-* With Go’s universal formatting style thanks to gofmt and a testing 
-  framework built-in, we can concentrate on our interpreter and not 
-  worry about 3rd party libraries, tools and dependencies.
-  
-## **REPL example**
 ```
-$ go run main.go 
-Hello mrnugget! This is the Monkey programming language! 
-Feel free to type in commands 
->> let people = [{"name": "Alice", "age": 24}, {"name": "Anna", "age": 28}]; 
->> people[0]["name"]; 
-Alice
->> people[1]["age"]; 
-28
->> people[1]["age"] + people[0]["age"];
-52 
->> let getName = fn(person) { person["name"]; };
->> getName(people[0]);
-Alice 
->> getName(people[1]); 
-Anna
-```  
+let applyTwice = fn(f, x) { f(f(x)) };
+applyTwice(fn(x) { x * 3 }, 2);               // 18
 
-## References:
+let makeAdder = fn(n) { fn(x) { x + n } };
+let addTen = makeAdder(10);
+addTen(5);                                    // 15
+```
 
-This work it's based on the book 
->Writing an Interpreter in Go by Thorsten Ball
+### Built-in functions
+
+| Function | Description | Example |
+|---|---|---|
+| `len(x)` | Length of a string or array | `len("monkey")` → `6` |
+| `first(arr)` | First element of an array | `first([1, 2, 3])` → `1` |
+| `last(arr)` | Last element of an array | `last([1, 2, 3])` → `3` |
+| `rest(arr)` | A new array without the first element | `rest([1, 2, 3])` → `[2, 3]` |
+| `push(arr, x)` | A new array with `x` appended | `push([1, 2], 3)` → `[1, 2, 3]` |
+| `puts(x...)` | Print values, returns `null` | `puts("hi")` |
+
+### Operators
+
+- Arithmetic on integers: `+`, `-`, `*`, `/`
+- Comparison: `<`, `>`, `==`, `!=`
+- Prefix: `-` (negation), `!` (logical not)
+- String concatenation: `+`
+- Indexing: `array[i]`, `hash[key]`
+
+### Known limitations
+
+These come from the book's design. They are not bugs:
+
+- Integers only. There are no floating-point numbers.
+- No `<=` or `>=`.
+- Identifiers may contain only letters and `_` (no digits).
+- No loops. Use recursion instead.
+- No comments in Monkey source.
+
+## Getting started
+
+Requires Go 1.22 or newer.
+
+Run the REPL:
+
+```
+go run .
+```
+
+```
+>> let makeAdder = fn(n) { fn(x) { x + n } };
+>> let addTen = makeAdder(10);
+>> addTen(5)
+15
+```
+
+Run the tests:
+
+```
+go test ./...
+```
+
+## Project layout
+
+| Package | Responsibility |
+|---|---|
+| `token` | Token types produced by the lexer |
+| `lexer` | Turns source text into tokens |
+| `ast` | The abstract syntax tree node types |
+| `parser` | Pratt parser that builds the AST from tokens |
+| `object` | Runtime values (integers, strings, functions, …) and environments |
+| `evaluator` | Walks the AST and evaluates it, plus the built-in functions |
+| `repl` | The interactive read-eval-print loop |
+
+## License
+
+MIT. See [LICENSE](LICENSE). The original copyright notice from
+SaladinoBelisario/Interpreter_Go is kept there unchanged.
