@@ -2,8 +2,8 @@ package parser
 
 import (
 	"fmt"
-	"monkey/ast"
-	"monkey/lexer"
+	"github.com/SJrX/Interpreter_Go/ast"
+	"github.com/SJrX/Interpreter_Go/lexer"
 	"testing"
 )
 
