@@ -111,8 +111,14 @@ type IndexExpression struct {
 }
 
 type HashLiteral struct {
-	Token token.Token // the '{' token
-	Pairs map[Expression]Expression
+	Token token.Token       // the '{' token
+	Pairs []HashLiteralPair // in source order
+}
+
+// HashLiteralPair is one `key: value` entry of a HashLiteral.
+type HashLiteralPair struct {
+	Key   Expression
+	Value Expression
 }
 
 func (fl *FunctionLiteral) expressionNode()      {}
@@ -331,8 +337,8 @@ func (hl *HashLiteral) TokenLiteral() string {
 func (hl *HashLiteral) String() string {
 	var out bytes.Buffer
 	pairs := []string{}
-	for key, value := range hl.Pairs {
-		pairs = append(pairs, key.String()+":"+value.String())
+	for _, pair := range hl.Pairs {
+		pairs = append(pairs, pair.Key.String()+":"+pair.Value.String())
 	}
 	out.WriteString("{")
 	out.WriteString(strings.Join(pairs, ", "))

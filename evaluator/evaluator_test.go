@@ -543,3 +543,48 @@ func testNullObject(t *testing.T, obj object.Object) bool {
 	}
 	return true
 }
+
+func TestHashLiteralsKeepInsertionOrder(t *testing.T) {
+	tests := []struct {
+		name     string
+		input    string
+		expected string
+	}{
+		{"source order", `{"b": 1, "a": 2, 3: 4, true: 5}`, "{b: 1, a: 2, 3: 4, true: 5}"},
+		{"computed keys", `let k = "x"; {k + "2": 1, k + "1": 2}`, "{x2: 1, x1: 2}"},
+		{"duplicate key keeps its first position and its last value", `{"a": 1, "b": 2, "a": 3}`, "{a: 3, b: 2}"},
+		{"empty", `{}`, "{}"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Go map iteration order is random, so check more than once.
+			for i := 0; i < 20; i++ {
+				if got := testEval(tt.input).Inspect(); got != tt.expected {
+					t.Fatalf("want %q, got %q", tt.expected, got)
+				}
+			}
+		})
+	}
+}
+
+func TestHashLiteralDuplicateKeyLastValueWins(t *testing.T) {
+	for i := 0; i < 20; i++ {
+		testIntegerObject(t, testEval(`{"a": 1, "a": 2}["a"]`), 2)
+	}
+}
+
+// Keys and values are evaluated in source order, so the first error in the
+// source is the one reported.
+func TestHashLiteralEvaluatesPairsInSourceOrder(t *testing.T) {
+	for i := 0; i < 20; i++ {
+		evaluated := testEval(`{"a": alpha, "b": beta, "c": gamma}`)
+		errObj, ok := evaluated.(*object.Error)
+		if !ok {
+			t.Fatalf("expected an error, got %T (%+v)", evaluated, evaluated)
+		}
+		if errObj.Message != "identifier not found: alpha" {
+			t.Fatalf("wrong error. got=%q", errObj.Message)
+		}
+	}
+}
