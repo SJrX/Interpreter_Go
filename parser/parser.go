@@ -2,9 +2,9 @@ package parser
 
 import (
 	"fmt"
-	"monkey/ast"
-	"monkey/lexer"
-	"monkey/token"
+	"github.com/SJrX/Interpreter_Go/ast"
+	"github.com/SJrX/Interpreter_Go/lexer"
+	"github.com/SJrX/Interpreter_Go/token"
 	"strconv"
 )
 

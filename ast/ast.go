@@ -2,7 +2,7 @@ package ast
 
 import (
 	"bytes"
-	"monkey/token"
+	"github.com/SJrX/Interpreter_Go/token"
 	"strings"
 )
 
