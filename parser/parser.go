@@ -142,10 +142,18 @@ func (p *Parser) ParseProgram() *ast.Program {
 	return program
 }
 
+// parseStatement returns nil if the statement could not be parsed.
+//
+// The nil must be returned as an untyped nil interface: returning a nil
+// *ast.LetStatement directly would produce a non-nil ast.Statement holding a
+// nil pointer, which callers' `stmt != nil` checks would not catch.
 func (p *Parser) parseStatement() ast.Statement {
 	switch p.curToken.Type {
 	case token.LET:
-		return p.parseLetStatement()
+		if stmt := p.parseLetStatement(); stmt != nil {
+			return stmt
+		}
+		return nil
 	case token.RETURN:
 		return p.parseReturnStatement()
 	default:

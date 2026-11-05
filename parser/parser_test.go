@@ -968,3 +968,48 @@ func checkParserErrors(t *testing.T, p *Parser) {
 	}
 	t.FailNow()
 }
+
+func TestInvalidLetStatementsAreNotAddedToTheProgram(t *testing.T) {
+	tests := []struct {
+		input              string
+		expectedStatements int
+	}{
+		{"let = 5;", 2},            // `=` and `5` are parsed as expressions
+		{"let x 5;", 1},            // `5` is parsed as an expression
+		{"let = 5; let y = 1;", 3}, // the valid let is kept
+		{"fn() { let = 1; 2 }", 1}, // inside a block statement
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.input, func(t *testing.T) {
+			p := New(lexer.New(tt.input))
+			program := p.ParseProgram()
+
+			if len(p.Errors()) == 0 {
+				t.Fatalf("expected parser errors for %q", tt.input)
+			}
+			assertNoNilStatements(t, program.Statements)
+			if len(program.Statements) != tt.expectedStatements {
+				t.Fatalf("wrong number of statements. want=%d, got=%d",
+					tt.expectedStatements, len(program.Statements))
+			}
+
+			// Printing the program used to panic on the nil *ast.LetStatement.
+			_ = program.String()
+		})
+	}
+}
+
+func assertNoNilStatements(t *testing.T, statements []ast.Statement) {
+	t.Helper()
+	for i, stmt := range statements {
+		if let, ok := stmt.(*ast.LetStatement); ok && let == nil {
+			t.Fatalf("statement %d is a nil *ast.LetStatement", i)
+		}
+		if es, ok := stmt.(*ast.ExpressionStatement); ok {
+			if fn, ok := es.Expression.(*ast.FunctionLiteral); ok && fn.Body != nil {
+				assertNoNilStatements(t, fn.Body.Statements)
+			}
+		}
+	}
+}
