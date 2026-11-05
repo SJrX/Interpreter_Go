@@ -4,23 +4,24 @@ import (
 	"bytes"
 	"fmt"
 	"hash/fnv"
-	"github.com/SJrX/Interpreter_Go/ast"
 	"strings"
+
+	"github.com/SJrX/Interpreter_Go/ast"
 )
 
 type ObjectType string
 
 const (
-	NULL_OBJ  = "NULL"
-	ERROR_OBJ = "ERROR"
-	INTEGER_OBJ = "INTEGER"
-	BOOLEAN_OBJ = "BOOLEAN"
+	NULL_OBJ         = "NULL"
+	ERROR_OBJ        = "ERROR"
+	INTEGER_OBJ      = "INTEGER"
+	BOOLEAN_OBJ      = "BOOLEAN"
 	RETURN_VALUE_OBJ = "RETURN_VALUE"
-	FUNCTION_OBJ = "FUNCTION"
-	STRING_OBJ = "STRING"
-	BUILTIN_OBJ = "BUILTIN"
-	ARRAY_OBJ = "ARRAY"
-	HASH_OBJ = "HASH"
+	FUNCTION_OBJ     = "FUNCTION"
+	STRING_OBJ       = "STRING"
+	BUILTIN_OBJ      = "BUILTIN"
+	ARRAY_OBJ        = "ARRAY"
+	HASH_OBJ         = "HASH"
 )
 
 type Object interface {
@@ -67,12 +68,12 @@ type Array struct {
 }
 
 type HashKey struct {
-	Type ObjectType
+	Type  ObjectType
 	Value uint64
 }
 
 type HashPair struct {
-	Key Object
+	Key   Object
 	Value Object
 }
 
@@ -84,21 +85,21 @@ type Hashable interface {
 	HashKey() HashKey
 }
 
-func (f *Function) Type() ObjectType { return FUNCTION_OBJ }
-func (b *Boolean) Type() ObjectType { return BOOLEAN_OBJ }
-func (b *Boolean) Inspect() string  { return fmt.Sprintf("%t", b.Value) }
-func (n *Null) Type() ObjectType { return NULL_OBJ }
-func (n *Null) Inspect() string  { return "null" }
+func (f *Function) Type() ObjectType     { return FUNCTION_OBJ }
+func (b *Boolean) Type() ObjectType      { return BOOLEAN_OBJ }
+func (b *Boolean) Inspect() string       { return fmt.Sprintf("%t", b.Value) }
+func (n *Null) Type() ObjectType         { return NULL_OBJ }
+func (n *Null) Inspect() string          { return "null" }
 func (rv *ReturnValue) Type() ObjectType { return RETURN_VALUE_OBJ }
 func (rv *ReturnValue) Inspect() string  { return rv.Value.Inspect() }
-func (e *Error) Type() ObjectType { return ERROR_OBJ }
-func (e *Error) Inspect() string  { return "ERROR: " + e.Message }
-func (i *Integer) Type() ObjectType { return INTEGER_OBJ }
-func (i *Integer) Inspect() string  { return fmt.Sprintf("%d", i.Value) }
-func (s *String) Type() ObjectType { return STRING_OBJ }
-func (s *String) Inspect() string { return s.Value }
-func (b *Builtin) Type() ObjectType { return BUILTIN_OBJ }
-func (b *Builtin) Inspect() string { return "builtin function" }
+func (e *Error) Type() ObjectType        { return ERROR_OBJ }
+func (e *Error) Inspect() string         { return "ERROR: " + e.Message }
+func (i *Integer) Type() ObjectType      { return INTEGER_OBJ }
+func (i *Integer) Inspect() string       { return fmt.Sprintf("%d", i.Value) }
+func (s *String) Type() ObjectType       { return STRING_OBJ }
+func (s *String) Inspect() string        { return s.Value }
+func (b *Builtin) Type() ObjectType      { return BUILTIN_OBJ }
+func (b *Builtin) Inspect() string       { return "builtin function" }
 func (f *Function) Inspect() string {
 	var out bytes.Buffer
 

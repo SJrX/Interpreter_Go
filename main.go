@@ -2,9 +2,10 @@ package main
 
 import (
 	"fmt"
-	"github.com/SJrX/Interpreter_Go/repl"
 	"os"
 	"os/user"
+
+	"github.com/SJrX/Interpreter_Go/repl"
 )
 
 func main() {
