@@ -968,3 +968,24 @@ func checkParserErrors(t *testing.T, p *Parser) {
 	}
 	t.FailNow()
 }
+
+// Printing a program that failed to parse must not panic. The parser leaves
+// nil expressions behind in the AST when part of an expression is missing.
+func TestStringDoesNotPanicAfterParseErrors(t *testing.T) {
+	inputs := []string{
+		"!", "-", "-+", "1 +", "1 + +", "1 * (2 + )", "!!",
+		"[+]", "[1, +]", "f(+)", "a[+]", "if (+) { 1 }",
+		"{+: 1}", "{1: +}",
+	}
+
+	for _, input := range inputs {
+		t.Run(input, func(t *testing.T) {
+			p := New(lexer.New(input))
+			program := p.ParseProgram()
+			if len(p.Errors()) == 0 {
+				t.Fatalf("expected parser errors for %q", input)
+			}
+			_ = program.String()
+		})
+	}
+}
