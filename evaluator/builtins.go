@@ -2,11 +2,39 @@ package evaluator
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/SJrX/Interpreter_Go/object"
 )
 
 var builtins = map[string]*object.Builtin{
+	"str": &object.Builtin{
+		Fn: func(args ...object.Object) object.Object {
+			if len(args) != 1 {
+				return newError("wrong number of arguments. got=%d, want=1", len(args))
+			}
+			return &object.String{Value: args[0].Inspect()}
+		},
+	},
+	"int": &object.Builtin{
+		Fn: func(args ...object.Object) object.Object {
+			if len(args) != 1 {
+				return newError("wrong number of arguments. got=%d, want=1", len(args))
+			}
+			switch arg := args[0].(type) {
+			case *object.Integer:
+				return arg
+			case *object.String:
+				value, err := strconv.ParseInt(arg.Value, 10, 64)
+				if err != nil {
+					return newError("could not convert %q to INTEGER", arg.Value)
+				}
+				return &object.Integer{Value: value}
+			default:
+				return newError("argument to `int` not supported, got %s", args[0].Type())
+			}
+		},
+	},
 	"len": &object.Builtin{
 		Fn: func(args ...object.Object) object.Object {
 			if len(args) != 1 {

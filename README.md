@@ -70,6 +70,8 @@ addTen(5);                                    // 15
 
 | Function | Description | Example |
 |---|---|---|
+| `str(x)` | Text as printed by the REPL; strings stay unchanged | `str([1, 2])` → `"[1, 2]"` |
+| `int(x)` | Convert a decimal string or keep an integer; invalid input and overflow return an error | `int("-7")` → `-7` |
 | `len(x)` | Length of a string or array | `len("monkey")` → `6` |
 | `first(arr)` | First element of an array | `first([1, 2, 3])` → `1` |
 | `last(arr)` | Last element of an array | `last([1, 2, 3])` → `3` |
