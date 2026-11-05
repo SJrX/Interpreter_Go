@@ -453,7 +453,7 @@ func (p *Parser) parseIndexExpression(left ast.Expression) ast.Expression {
 
 func (p *Parser) parseHashLiteral() ast.Expression {
 	hash := &ast.HashLiteral{Token: p.curToken}
-	hash.Pairs = make(map[ast.Expression]ast.Expression)
+	hash.Pairs = []ast.HashLiteralPair{}
 	for !p.peekTokenIs(token.RBRACE) {
 		p.nextToken()
 		key := p.parseExpression(LOWEST)
@@ -462,7 +462,7 @@ func (p *Parser) parseHashLiteral() ast.Expression {
 		}
 		p.nextToken()
 		value := p.parseExpression(LOWEST)
-		hash.Pairs[key] = value
+		hash.Pairs = append(hash.Pairs, ast.HashLiteralPair{Key: key, Value: value})
 		if !p.peekTokenIs(token.RBRACE) && !p.expectPeek(token.COMMA) {
 			return nil
 		}

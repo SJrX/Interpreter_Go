@@ -79,6 +79,23 @@ type HashPair struct {
 
 type Hash struct {
 	Pairs map[HashKey]HashPair
+	// Keys holds the keys of Pairs in insertion order, so that hashes print
+	// in the order they were written.
+	Keys []HashKey
+}
+
+// Set adds or replaces a pair, whose key must be Hashable. A new key goes at
+// the end of the order; an existing key keeps its position and gets the new
+// value.
+func (h *Hash) Set(pair HashPair) {
+	key := pair.Key.(Hashable).HashKey()
+	if h.Pairs == nil {
+		h.Pairs = make(map[HashKey]HashPair)
+	}
+	if _, exists := h.Pairs[key]; !exists {
+		h.Keys = append(h.Keys, key)
+	}
+	h.Pairs[key] = pair
 }
 
 type Hashable interface {
@@ -153,7 +170,8 @@ func (h *Hash) Type() ObjectType { return HASH_OBJ }
 func (h *Hash) Inspect() string {
 	var out bytes.Buffer
 	pairs := []string{}
-	for _, pair := range h.Pairs {
+	for _, key := range h.Keys {
+		pair := h.Pairs[key]
 		pairs = append(pairs, fmt.Sprintf("%s: %s", pair.Key.Inspect(), pair.Value.Inspect()))
 	}
 	out.WriteString("{")

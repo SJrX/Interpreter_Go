@@ -2,6 +2,7 @@ package parser
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/SJrX/Interpreter_Go/ast"
@@ -758,13 +759,13 @@ func TestParsingHashLiteralsStringKeys(t *testing.T) {
 		"two":   2,
 		"three": 3,
 	}
-	for key, value := range hash.Pairs {
-		literal, ok := key.(*ast.StringLiteral)
+	for _, pair := range hash.Pairs {
+		literal, ok := pair.Key.(*ast.StringLiteral)
 		if !ok {
-			t.Errorf("key is not ast.StringLiteral. got=%T", key)
+			t.Errorf("key is not ast.StringLiteral. got=%T", pair.Key)
 		}
 		expectedValue := expected[literal.String()]
-		testIntegerLiteral(t, value, expectedValue)
+		testIntegerLiteral(t, pair.Value, expectedValue)
 	}
 }
 
@@ -809,10 +810,10 @@ func TestParsingHashLiteralsWithExpressions(t *testing.T) {
 			testInfixExpression(t, e, 15, "/", 5)
 		},
 	}
-	for key, value := range hash.Pairs {
-		literal, ok := key.(*ast.StringLiteral)
+	for _, pair := range hash.Pairs {
+		literal, ok := pair.Key.(*ast.StringLiteral)
 		if !ok {
-			t.Errorf("key is not ast.StringLiteral. got=%T", key)
+			t.Errorf("key is not ast.StringLiteral. got=%T", pair.Key)
 			continue
 		}
 		testFunc, ok := tests[literal.String()]
@@ -820,7 +821,7 @@ func TestParsingHashLiteralsWithExpressions(t *testing.T) {
 			t.Errorf("No test function for key %q found", literal.String())
 			continue
 		}
-		testFunc(value)
+		testFunc(pair.Value)
 	}
 }
 
@@ -967,4 +968,27 @@ func checkParserErrors(t *testing.T, p *Parser) {
 		t.Errorf("parser error: %q", msg)
 	}
 	t.FailNow()
+}
+
+func TestParsingHashLiteralKeepsSourceOrder(t *testing.T) {
+	input := `{"b": 1, "a": 2, 3: 4, true: 5}`
+
+	// Go map iteration order is random, so check more than once.
+	for i := 0; i < 20; i++ {
+		p := New(lexer.New(input))
+		program := p.ParseProgram()
+		checkParserErrors(t, p)
+
+		hash := program.Statements[0].(*ast.ExpressionStatement).Expression.(*ast.HashLiteral)
+		keys := []string{}
+		for _, pair := range hash.Pairs {
+			keys = append(keys, pair.Key.String())
+		}
+		if got := strings.Join(keys, " "); got != "b a 3 true" {
+			t.Fatalf("keys out of source order. got=%q", got)
+		}
+		if got := hash.String(); got != "{b:1, a:2, 3:4, true:5}" {
+			t.Fatalf("wrong String(). got=%q", got)
+		}
+	}
 }
