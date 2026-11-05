@@ -135,3 +135,96 @@ func TestNextToken(t *testing.T) {
 		}
 	}
 }
+
+func TestLineComments(t *testing.T) {
+	tests := []struct {
+		name  string
+		input string
+		want  []struct {
+			typ     token.TokenType
+			literal string
+		}
+	}{
+		{
+			name:  "comment on its own line",
+			input: "// only a comment\n5;",
+			want: []struct {
+				typ     token.TokenType
+				literal string
+			}{
+				{token.INT, "5"},
+				{token.SEMICOLON, ";"},
+				{token.EOF, ""},
+			},
+		},
+		{
+			name:  "comment at end of a line",
+			input: "1 + 2; // sum\n3;",
+			want: []struct {
+				typ     token.TokenType
+				literal string
+			}{
+				{token.INT, "1"},
+				{token.PLUS, "+"},
+				{token.INT, "2"},
+				{token.SEMICOLON, ";"},
+				{token.INT, "3"},
+				{token.SEMICOLON, ";"},
+				{token.EOF, ""},
+			},
+		},
+		{
+			name:  "comment at end of input without newline",
+			input: "42 // trailing",
+			want: []struct {
+				typ     token.TokenType
+				literal string
+			}{
+				{token.INT, "42"},
+				{token.EOF, ""},
+			},
+		},
+		{
+			name:  "slash-slash inside a string is not a comment",
+			input: `"a // b"`,
+			want: []struct {
+				typ     token.TokenType
+				literal string
+			}{
+				{token.STRING, "a // b"},
+				{token.EOF, ""},
+			},
+		},
+		{
+			name:  "single slash remains division",
+			input: "10 / 2;",
+			want: []struct {
+				typ     token.TokenType
+				literal string
+			}{
+				{token.INT, "10"},
+				{token.SLASH, "/"},
+				{token.INT, "2"},
+				{token.SEMICOLON, ";"},
+				{token.EOF, ""},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			l := New(tt.input)
+			for i, want := range tt.want {
+				tok := l.NextToken()
+				if tok.Type != want.typ {
+					t.Fatalf("tests[%d] - tokentype wrong. expected=%q, got=%q",
+						i, want.typ, tok.Type)
+				}
+				if tok.Literal != want.literal {
+					t.Fatalf("tests[%d] - literal wrong. expected=%q, got=%q",
+						i, want.literal, tok.Literal)
+				}
+			}
+		})
+	}
+}
