@@ -1,5 +1,7 @@
 # Monkey interpreter in Go
 
+[![CI](https://github.com/SJrX/Interpreter_Go/actions/workflows/ci.yml/badge.svg)](https://github.com/SJrX/Interpreter_Go/actions/workflows/ci.yml)
+
 A tree-walking interpreter for **Monkey**, the small programming language
 designed in Thorsten Ball's book
 [*Writing An Interpreter In Go*](https://interpreterbook.com/).
@@ -110,10 +112,13 @@ go run .
 15
 ```
 
-Run the tests:
+Run the tests and checks that CI runs:
 
 ```
-go test ./...
+gofmt -l .
+go vet ./...
+go test -race ./...
+go run honnef.co/go/tools/cmd/staticcheck@2026.2.1 ./...
 ```
 
 ## Project layout
