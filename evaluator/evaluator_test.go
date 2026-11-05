@@ -215,6 +215,22 @@ func TestErrorHandling(t *testing.T) {
 			`{"name": "Monkey"}[fn(x) { x }];`,
 			"unusable as hash key: FUNCTION",
 		},
+		{
+			"let add = fn(a, b) { a + b }; add(1)",
+			"wrong number of arguments. got=1, want=2",
+		},
+		{
+			"let identity = fn(x) { x }; identity(1, 2)",
+			"wrong number of arguments. got=2, want=1",
+		},
+		{
+			"let constant = fn() { 1 }; constant(1)",
+			"wrong number of arguments. got=1, want=0",
+		},
+		{
+			"let add = fn(a, b) { a + b }; let twice = fn(f) { f(1) }; twice(add); 5",
+			"wrong number of arguments. got=1, want=2",
+		},
 	}
 
 	for _, tt := range tests {
