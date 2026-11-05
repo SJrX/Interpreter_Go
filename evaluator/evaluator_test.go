@@ -215,6 +215,18 @@ func TestErrorHandling(t *testing.T) {
 			`{"name": "Monkey"}[fn(x) { x }];`,
 			"unusable as hash key: FUNCTION",
 		},
+		{
+			"10 / 0",
+			"division by zero: 10 / 0",
+		},
+		{
+			"let zero = 5 - 5; 1 + 10 / zero",
+			"division by zero: 10 / 0",
+		},
+		{
+			"let f = fn(x) { 100 / x }; f(0); 1",
+			"division by zero: 100 / 0",
+		},
 	}
 
 	for _, tt := range tests {
