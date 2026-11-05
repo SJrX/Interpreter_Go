@@ -45,9 +45,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # staticcheck 2026.2.1 cannot read export data from Go 1.27+, so keep
+      # this job on Go 1.26 until staticcheck is upgraded.
       - uses: actions/setup-go@v5
         with:
-          go-version: stable
+          go-version: "1.26.x"
 
       - name: Staticcheck
         run: go run honnef.co/go/tools/cmd/staticcheck@2026.2.1 ./...
