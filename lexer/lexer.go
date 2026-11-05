@@ -68,8 +68,15 @@ func (l *Lexer) NextToken() token.Token {
 	case ']':
 		tok = newToken(token.RBRACKET, l.ch)
 	case '"':
-		tok.Type = token.STRING
-		tok.Literal = l.readString()
+		str, terminated := l.readString()
+		if terminated {
+			tok.Type = token.STRING
+			tok.Literal = str
+		} else {
+			// Keep the opening quote so the error shows what was written.
+			tok.Type = token.ILLEGAL
+			tok.Literal = `"` + str
+		}
 	case ':':
 		tok = newToken(token.COLON, l.ch)
 	case 0:
@@ -145,7 +152,9 @@ func newToken(tokenType token.TokenType, ch byte) token.Token {
 	return token.Token{Type: tokenType, Literal: string(ch)}
 }
 
-func (l *Lexer) readString() string {
+// readString reads a string literal after its opening quote. It reports
+// whether the closing quote was found before the end of the input.
+func (l *Lexer) readString() (string, bool) {
 	position := l.position + 1
 	for {
 		l.readChar()
@@ -153,5 +162,5 @@ func (l *Lexer) readString() string {
 			break
 		}
 	}
-	return l.input[position:l.position]
+	return l.input[position:l.position], l.ch == '"'
 }
