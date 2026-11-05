@@ -135,3 +135,39 @@ func TestNextToken(t *testing.T) {
 		}
 	}
 }
+
+func TestUnterminatedStringIsIllegal(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected []token.Token
+	}{
+		{`"abc`, []token.Token{{Type: token.ILLEGAL, Literal: `"abc`}, {Type: token.EOF, Literal: ""}}},
+		{`"`, []token.Token{{Type: token.ILLEGAL, Literal: `"`}, {Type: token.EOF, Literal: ""}}},
+		{`let s = "abc`, []token.Token{
+			{Type: token.LET, Literal: "let"},
+			{Type: token.IDENT, Literal: "s"},
+			{Type: token.ASSIGN, Literal: "="},
+			{Type: token.ILLEGAL, Literal: `"abc`},
+			{Type: token.EOF, Literal: ""},
+		}},
+		{`"done" "not`, []token.Token{
+			{Type: token.STRING, Literal: "done"},
+			{Type: token.ILLEGAL, Literal: `"not`},
+			{Type: token.EOF, Literal: ""},
+		}},
+		{`""`, []token.Token{{Type: token.STRING, Literal: ""}, {Type: token.EOF, Literal: ""}}},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.input, func(t *testing.T) {
+			l := New(tt.input)
+			for i, want := range tt.expected {
+				got := l.NextToken()
+				if got.Type != want.Type || got.Literal != want.Literal {
+					t.Fatalf("token %d: want {%s %q}, got {%s %q}",
+						i, want.Type, want.Literal, got.Type, got.Literal)
+				}
+			}
+		})
+	}
+}

@@ -968,3 +968,28 @@ func checkParserErrors(t *testing.T, p *Parser) {
 	}
 	t.FailNow()
 }
+
+func TestIllegalTokensAreReportedByTheirText(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected string
+	}{
+		{`let s = "abc`, `illegal token: "abc`},
+		{`1 + @`, `illegal token: @`},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.input, func(t *testing.T) {
+			p := New(lexer.New(tt.input))
+			p.ParseProgram()
+
+			errors := p.Errors()
+			if len(errors) != 1 {
+				t.Fatalf("want exactly 1 parser error, got %d: %q", len(errors), errors)
+			}
+			if errors[0] != tt.expected {
+				t.Fatalf("wrong error.\nwant=%q\ngot =%q", tt.expected, errors[0])
+			}
+		})
+	}
+}
