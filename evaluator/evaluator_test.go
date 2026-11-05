@@ -543,3 +543,40 @@ func testNullObject(t *testing.T, obj object.Object) bool {
 	}
 	return true
 }
+
+func TestStringComparison(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected bool
+	}{
+		{`"a" == "a"`, true},
+		{`"a" == "b"`, false},
+		{`"a" != "a"`, false},
+		{`"a" != "b"`, true},
+		{`"" == ""`, true},
+		{`"mon" + "key" == "monkey"`, true},
+		{`let s = "monkey"; s == "monkey"`, true},
+		{`let f = fn() { "x" }; f() == f()`, true},
+	}
+
+	for _, tt := range tests {
+		testBooleanObject(t, testEval(tt.input), tt.expected)
+	}
+}
+
+// As for other types, == and != between different types compare unequal
+// rather than raising an error.
+func TestStringComparisonWithOtherTypes(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected bool
+	}{
+		{`"1" == 1`, false},
+		{`"1" != 1`, true},
+		{`"true" == true`, false},
+	}
+
+	for _, tt := range tests {
+		testBooleanObject(t, testEval(tt.input), tt.expected)
+	}
+}
