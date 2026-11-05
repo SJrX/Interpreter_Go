@@ -141,10 +141,10 @@ func (ce *CallExpression) String() string {
 
 	args := []string{}
 	for _, a := range ce.Arguments {
-		args = append(args, a.String())
+		args = append(args, exprString(a))
 	}
 
-	out.WriteString(ce.Function.String())
+	out.WriteString(exprString(ce.Function))
 	out.WriteString("(")
 	out.WriteString(strings.Join(args, ", "))
 	out.WriteString(")")
@@ -223,7 +223,7 @@ func (ie *IfExpression) String() string {
 	var out bytes.Buffer
 
 	out.WriteString("if")
-	out.WriteString(ie.Condition.String())
+	out.WriteString(exprString(ie.Condition))
 	out.WriteString(" ")
 	out.WriteString(ie.Consequence.String())
 
@@ -266,7 +266,7 @@ func (pe *PrefixExpression) String() string {
 
 	out.WriteString("(")
 	out.WriteString(pe.Operator)
-	out.WriteString(pe.Right.String())
+	out.WriteString(exprString(pe.Right))
 	out.WriteString(")")
 
 	return out.String()
@@ -278,9 +278,9 @@ func (oe *InfixExpression) String() string {
 	var out bytes.Buffer
 
 	out.WriteString("(")
-	out.WriteString(oe.Left.String())
+	out.WriteString(exprString(oe.Left))
 	out.WriteString(" " + oe.Operator + " ")
-	out.WriteString(oe.Right.String())
+	out.WriteString(exprString(oe.Right))
 	out.WriteString(")")
 
 	return out.String()
@@ -302,7 +302,7 @@ func (al *ArrayLiteral) String() string {
 	var out bytes.Buffer
 	elements := []string{}
 	for _, el := range al.Elements {
-		elements = append(elements, el.String())
+		elements = append(elements, exprString(el))
 	}
 	out.WriteString("[")
 	out.WriteString(strings.Join(elements, ", "))
@@ -317,9 +317,9 @@ func (ie *IndexExpression) TokenLiteral() string {
 func (ie *IndexExpression) String() string {
 	var out bytes.Buffer
 	out.WriteString("(")
-	out.WriteString(ie.Left.String())
+	out.WriteString(exprString(ie.Left))
 	out.WriteString("[")
-	out.WriteString(ie.Index.String())
+	out.WriteString(exprString(ie.Index))
 	out.WriteString("])")
 	return out.String()
 }
@@ -332,10 +332,21 @@ func (hl *HashLiteral) String() string {
 	var out bytes.Buffer
 	pairs := []string{}
 	for key, value := range hl.Pairs {
-		pairs = append(pairs, key.String()+":"+value.String())
+		pairs = append(pairs, exprString(key)+":"+exprString(value))
 	}
 	out.WriteString("{")
 	out.WriteString(strings.Join(pairs, ", "))
 	out.WriteString("}")
 	return out.String()
+}
+
+// exprString returns the String() of an expression, or "" if it is missing.
+// The parser leaves a nil expression behind when part of an expression fails
+// to parse (for example the right-hand side of `1 +`). The parse error is
+// reported separately, but printing the AST must not panic.
+func exprString(e Expression) string {
+	if e == nil {
+		return ""
+	}
+	return e.String()
 }
